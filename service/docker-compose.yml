@@ -1,0 +1,25 @@
+# NOTES:
+# 1. docker compose up -d => starts the services in detached mode (daemon mode)
+# 2. docker ps => lists the running containers
+# 3. docker compose down => stops the services and removes the containers
+# 4. docker exec -it <container_name> bash => opens a bash shell in the specified container
+# 5. docker compose exec -it <service_name> bash => opens a bash shell in the specified service container
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: sakamoto
+      POSTGRES_PASSWORD: sakamoto
+      POSTGRES_DB: autobiography
+    ports:
+      - 5432:5432 # hardware:vm port mapping
+
+  # Adminer service for database management, provides a dashboard interface
+  admin:
+    image: adminer:latest
+    restart: always
+    environment:
+      ADMINER_DESIGN: dracula
+    ports:
+      - 3333:8080
