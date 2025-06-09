@@ -92,6 +92,8 @@ func main() {
 	// 2. API vs SSR - API is flexible and agnostic of the client, separation of concerns,
 	// low latency due to core data being transferred
 	// 3. XSS - Cross Site Scripting (code injection), CSRF - Cross Site Request Forgery
+	// HTML templates are vulnerable to XSS attacks - therefore they must be encoded/sanitized
+	// (go template library does contextual escaping based on types of data)
 	router.Get("/", pathHandler)
 	router.Get("/posts/{id}", pathHandler)
 	router.Get("/posts/random", pathHandler)
@@ -103,6 +105,11 @@ func main() {
 
 	fmt.Println("Definitely starting the server on port 3333")
 	err := http.ListenAndServe(":3333", router)
+
+	// NOTE:
+	// 1. Errorf wraps the error with a message
+	// fmt.Errorf("create user: %w", err)
+	// 2. panic is like exit, stopping the program. Must funcs are a convention to handle errors where panics can be used.
 	if err != nil {
 		log.Fatal(err)
 	}
