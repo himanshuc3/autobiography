@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"himanshuc3.com/autobiography/handler"
 )
 
 // NOTE:
@@ -86,6 +88,7 @@ func main() {
 	// fmt.Fprintln(os.Stdout, "Hello, World!")
 	// router := Router{}
 	router := chi.NewRouter()
+	router.Use(middleware.Logger)
 
 	// TODO:
 	// 1. Add a middleware to check if the user is authenticated and for logging
@@ -95,13 +98,15 @@ func main() {
 	// HTML templates are vulnerable to XSS attacks - therefore they must be encoded/sanitized
 	// (go template library does contextual escaping based on types of data)
 	router.Get("/", pathHandler)
-	router.Get("/posts/{id}", pathHandler)
-	router.Get("/posts/random", pathHandler)
-	router.Get("/posts/search", pathHandler)
-	router.Get("/posts/latest", pathHandler)
-	router.Get("/posts", pathHandler)
-	router.Post("/post", pathHandler)
-	router.Delete("/posts/{id}", pathHandler)
+	// router.Get("/posts/{id}", pathHandler)
+	// router.Get("/posts/random", pathHandler)
+	// router.Get("/posts/search", pathHandler)
+	// router.Get("/posts/latest", pathHandler)
+	// router.Get("/posts", pathHandler)
+	// router.Post("/post", pathHandler)
+	// router.Delete("/posts/{id}", pathHandler)
+
+	router.Mount("/posts", handler.InitMemoirRoutes())
 
 	fmt.Println("Definitely starting the server on port 3333")
 	err := http.ListenAndServe(":3333", router)
