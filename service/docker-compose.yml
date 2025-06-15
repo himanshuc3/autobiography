@@ -11,7 +11,7 @@ services:
     environment:
       POSTGRES_USER: sakamoto
       POSTGRES_PASSWORD: sakamoto
-      POSTGRES_DB: autobiography
+      POSTGRES_DB: storyverse
     ports:
       - 5432:5432 # hardware:vm port mapping
 
