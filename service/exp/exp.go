@@ -9,6 +9,7 @@ import (
 // NOTE:
 // 1. Using custom types
 // 2. Not exporting type and keys for context, so that it doesn't cause collisions
+// 3. Contexts are useful as timeouts and data propagation
 type ctxKey string
 
 const (
