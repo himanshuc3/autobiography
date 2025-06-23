@@ -42,3 +42,44 @@ Rainbow Table: A table of common passwords, generate hash and do intersection wi
 Add salt, to prevent this intersection. It is saved alongside password-hash and makes brute force attacks much harder and computationally intensive.
 
 - Pepper - application wide same salt for all users
+
+## XSS vs CSRF
+
+- XSS - external malicious scripts injected in our domain/website. Can be prevented by restricting access of cookie to client js.
+- Adding vectors or layers of security to prevent incorrect auth.
+- CSRF - to whitelist your data, cookies, apis etc. to a specific domain (cookies leakage)
+  - Add a token unique to client for each user and give the token in body/header
+
+## Cookie theft
+
+- Packet sniffing: catch and grab.
+  - Https: encryption of packets
+- Available Https TLS certificate services(Caddy)
+- Fireship - for public wifi packet sniffing, fetching public unencrypted profiles of cookies/data
+- Limit users to 1 session
+- Cookie tampering
+  - Digitally signing
+- JWT - a standard for digitally signing JSON data
+
+## Middleware
+
+- Accept http handler, wrap it and return a modified handler (used for auth, logging, profilling etc.)
+
+## Obfuscation
+
+- Cookies are stored in database storing signed user string mapped to a userid
+
+user_id or email | random_string_cookie
+2343433 | svss43sdw3
+
+## Why not JWTs
+
+Complexity without enough benefits
+
+- Expiration
+- Refresh token, so need sessions anyway
+
+## Base64
+
+- Encoding algorithm that converts text to 64 characters: A-Z, a-z, +, /
+  - Useful for safe transmission of text over networks

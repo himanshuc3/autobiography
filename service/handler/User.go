@@ -10,7 +10,8 @@ import (
 )
 
 type UserHandler struct {
-	UserService *models.UserService
+	UserService    *models.UserService
+	SessionService *models.SessionService
 }
 
 // NOTE:
@@ -35,9 +36,20 @@ func (uh UserHandler) ProcessSignUp(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error encoding user", http.StatusInternalServerError)
 		return
 	}
+	// TODO:
+	// 1. Why are we setting session cookie while signing up
+	session, err := uh.SessionService.Create(createdUser.ID)
+	if err != nil {
+		fmt.Println(err)
+		// TODO: Long term, we should show a warning about not being able to sign the
+		// user in
+		// TODO: Redirect to login page on client-side
+		return
+	}
 	// Logic to create a user
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
+	setCookie(w, CookieSession, session.Token)
 	w.Write(response)
 }
 
@@ -60,15 +72,34 @@ func (uh UserHandler) ProcessSignIn(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
+	session, err := uh.SessionService.Create(user.ID)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	setCookie(w, CookieSession, session.Token)
 	// NOTE:
 	// 1. + - printing object w/ keys
-	cookie := http.Cookie{
-		Name:  "email",
-		Value: user.Email,
-		Path:  "/",
-	}
-	http.SetCookie(w, &cookie)
 	fmt.Fprintf(w, "User authenticated: %+v", user)
+}
+
+func (uh UserHandler) CurrentUser(w http.ResponseWriter, r *http.Request) {
+	tokenCookie, err := readCookie(r, CookieSession)
+
+	if err != nil {
+		fmt.Println(err)
+		// TODO: Don't know the fuck to do
+		fmt.Fprintf(w, "The email cookie could not be read.")
+		return
+	}
+	user, err := uh.SessionService.GetUser(tokenCookie)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Fprintf(w, "current user: %s\n", user.Email)
 }
 
 func (uh UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
@@ -90,11 +121,12 @@ func (uh UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("User deleted successfully for ID: " + id))
 }
 
-func InitUserRoutes(service *models.UserService) chi.Router {
+func InitUserRoutes(service *models.UserService, sessionService *models.SessionService) chi.Router {
 	router := chi.NewRouter()
-	userHandler := UserHandler{UserService: service}
+	userHandler := UserHandler{UserService: service, SessionService: sessionService}
 	router.Post("/signup", userHandler.ProcessSignUp)
 	router.Post("/signin", userHandler.ProcessSignIn)
+	router.Post("/me", userHandler.CurrentUser)
 	router.Get("/{id}", userHandler.GetUser)
 	router.Put("/{id}", userHandler.UpdateUser)
 	router.Delete("/{id}", userHandler.DeleteUser)

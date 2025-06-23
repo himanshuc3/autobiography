@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/gorilla/csrf"
 	_ "github.com/jackc/pgx/v5/stdlib" // Importing the pgx driver for PostgreSQL
 	database "himanshuc3.com/autobiography/db"
 	"himanshuc3.com/autobiography/handler"
@@ -103,6 +104,9 @@ func main() {
 	userService := &models.UserService{
 		DB: db,
 	}
+	sessionService := &models.SessionService{
+		DB: db,
+	}
 
 	// TODO:
 	// 1. Add a middleware to check if the user is authenticated and for logging
@@ -120,11 +124,14 @@ func main() {
 	// router.Post("/post", pathHandler)
 	// router.Delete("/posts/{id}", pathHandler)
 
+	csrfKey := "Testdcio9w02usdflkjsd09982343d3k"
+	csrfMw := csrf.Protect([]byte(csrfKey), csrf.Secure(false))
+
 	router.Mount("/posts", handler.InitMemoirRoutes())
-	router.Mount("/user", handler.InitUserRoutes(userService))
+	router.Mount("/user", handler.InitUserRoutes(userService, sessionService))
 
 	fmt.Println("Definitely starting the server on port 9000")
-	err = http.ListenAndServe(":9000", router)
+	err = http.ListenAndServe(":9000", csrfMw(router))
 
 	// NOTE:
 	// 1. Errorf wraps the error with a message
