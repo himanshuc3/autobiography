@@ -102,11 +102,22 @@ func (uh UserHandler) CurrentUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "current user: %s\n", user.Email)
 }
 
-func (uh UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
-	// Logic to get a user by ID
-	id := chi.URLParam(r, "id")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("User details for ID: " + id))
+func (uh UserHandler) ProcessSignout(w http.ResponseWriter, r *http.Request) {
+	token, err := readCookie(r, CookieSession)
+	if err != nil {
+		// token not present
+		http.Error(w, "Not able to sign out", http.StatusInternalServerError)
+		return
+	}
+	err = uh.SessionService.Delete(token)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
+	// TODO: Redirect from client
+	deleteCookie(w, CookieSession)
+
 }
 func (uh UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	// Logic to update a user by ID
@@ -127,7 +138,7 @@ func InitUserRoutes(service *models.UserService, sessionService *models.SessionS
 	router.Post("/signup", userHandler.ProcessSignUp)
 	router.Post("/signin", userHandler.ProcessSignIn)
 	router.Post("/me", userHandler.CurrentUser)
-	router.Get("/{id}", userHandler.GetUser)
+	router.Post("/signout", userHandler.ProcessSignout)
 	router.Put("/{id}", userHandler.UpdateUser)
 	router.Delete("/{id}", userHandler.DeleteUser)
 	return router

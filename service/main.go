@@ -9,8 +9,8 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/gorilla/csrf"
 	_ "github.com/jackc/pgx/v5/stdlib" // Importing the pgx driver for PostgreSQL
-	database "himanshuc3.com/autobiography/db"
 	"himanshuc3.com/autobiography/handler"
+	"himanshuc3.com/autobiography/migrations"
 	"himanshuc3.com/autobiography/models"
 )
 
@@ -95,11 +95,19 @@ func main() {
 	router.Use(middleware.Logger)
 
 	db, err := models.Open(models.DefaultPostgresConfig())
+	fmt.Println(models.DefaultPostgresConfig().String())
+
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
-	database.Init(db)
+	err = models.MigrateFS(db, migrations.FS, ".")
+
+	if err != nil {
+		panic(err)
+	}
+
+	// database.Init(db)
 
 	userService := &models.UserService{
 		DB: db,
