@@ -1,0 +1,8 @@
+"filename", "language", "Go", "MS SQL", "comment", "blank", "total"
+"/home/anonymous/Desktop/projects/autobiography/service/handler/User.go", "Go", -12, 0, 0, 0, -12
+"/home/anonymous/Desktop/projects/autobiography/service/handler/cookie.go", "Go", 28, 0, 0, 7, 35
+"/home/anonymous/Desktop/projects/autobiography/service/main.go", "Go", 3, 0, 0, 0, 3
+"/home/anonymous/Desktop/projects/autobiography/service/models/session.go", "Go", 58, 0, 4, 10, 72
+"/home/anonymous/Desktop/projects/autobiography/service/models/sql/session.sql", "MS SQL", 0, 0, 0, 1, 1
+"/home/anonymous/Desktop/projects/autobiography/service/rand/rand.go", "Go", -4, 0, 0, -2, -6
+"Total", "-", 73, 0, 4, 16, 93

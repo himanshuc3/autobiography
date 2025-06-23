@@ -1,0 +1,38 @@
+Date : 2025-06-23 18:59:57
+Directory : /home/anonymous/Desktop/projects/autobiography
+Total : 6 files,  73 codes, 4 comments, 16 blanks, all 93 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| Go       |          5 |         73 |          4 |         15 |         92 |
+| MS SQL   |          1 |          0 |          0 |          1 |          1 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                          | files      | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                             |          6 |         73 |          4 |         16 |         93 |
+| service                                                                       |          6 |         73 |          4 |         16 |         93 |
+| service (Files)                                                               |          1 |          3 |          0 |          0 |          3 |
+| service/handler                                                               |          2 |         16 |          0 |          7 |         23 |
+| service/models                                                                |          2 |         58 |          4 |         11 |         73 |
+| service/models (Files)                                                        |          1 |         58 |          4 |         10 |         72 |
+| service/models/sql                                                            |          1 |          0 |          0 |          1 |          1 |
+| service/rand                                                                  |          1 |         -4 |          0 |         -2 |         -6 |
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                      | language | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| /home/anonymous/Desktop/projects/autobiography/service/handler/User.go        | Go       |        -12 |          0 |          0 |        -12 |
+| /home/anonymous/Desktop/projects/autobiography/service/handler/cookie.go      | Go       |         28 |          0 |          7 |         35 |
+| /home/anonymous/Desktop/projects/autobiography/service/main.go                | Go       |          3 |          0 |          0 |          3 |
+| /home/anonymous/Desktop/projects/autobiography/service/models/session.go      | Go       |         58 |          4 |         10 |         72 |
+| /home/anonymous/Desktop/projects/autobiography/service/models/sql/session.sql | MS SQL   |          0 |          0 |          1 |          1 |
+| /home/anonymous/Desktop/projects/autobiography/service/rand/rand.go           | Go       |         -4 |          0 |         -2 |         -6 |
+| Total                                                                         |          |         73 |          4 |         16 |         93 |
++-------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
