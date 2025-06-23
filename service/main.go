@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/gorilla/csrf"
 	_ "github.com/jackc/pgx/v5/stdlib" // Importing the pgx driver for PostgreSQL
 	"himanshuc3.com/autobiography/handler"
@@ -108,7 +107,24 @@ func main() {
 	}
 
 	csrfKey := "Testdcio9w02usdflkjsd09982343d3k"
+	// TODO: Fix secure flag before deploying to prod
 	csrfMw := csrf.Protect([]byte(csrfKey), csrf.Secure(false))
+
+	// 4. Setup controllers/handlers in routing
+	router := chi.NewRouter()
+	router.Use(csrfMw)
+	router.Use(umw.SetUser)
+	router.Use(umw.RequireUser)
+	router.Get("/", pathHandler)
+	router.Mount("/posts", handler.InitMemoirRoutes())
+	router.Mount("/user", handler.InitUserRoutes(userService, sessionService))
+
+	// 5. Start the server
+	fmt.Println("Definitely starting the server on port 9000")
+	err = http.ListenAndServe(":9000", router)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// NOTES:
 	// 1. HandleFunc implements defaultServeMux, which is the default HTTP request multiplexer.
@@ -122,8 +138,7 @@ func main() {
 	// 2. Using modd for HMR dev server
 	// fmt.Fprintln(os.Stdout, "Hello, World!")
 	// router := Router{}
-	router := chi.NewRouter()
-	router.Use(middleware.Logger)
+	// router.Use(middleware.Logger)
 
 	// database.Init(db)
 
@@ -134,26 +149,9 @@ func main() {
 	// 3. XSS - Cross Site Scripting (code injection), CSRF - Cross Site Request Forgery
 	// HTML templates are vulnerable to XSS attacks - therefore they must be encoded/sanitized
 	// (go template library does contextual escaping based on types of data)
-	router.Get("/", pathHandler)
-	// router.Get("/posts/{id}", pathHandler)
-	// router.Get("/posts/random", pathHandler)
-	// router.Get("/posts/search", pathHandler)
-	// router.Get("/posts/latest", pathHandler)
-	// router.Get("/posts", pathHandler)
-	// router.Post("/post", pathHandler)
-	// router.Delete("/posts/{id}", pathHandler)
-
-	router.Mount("/posts", handler.InitMemoirRoutes())
-	router.Mount("/user", handler.InitUserRoutes(userService, sessionService))
-
-	fmt.Println("Definitely starting the server on port 9000")
-	err = http.ListenAndServe(":9000", csrfMw(umw.SetUser(router)))
 
 	// NOTE:
 	// 1. Errorf wraps the error with a message
 	// fmt.Errorf("create user: %w", err)
 	// 2. panic is like exit, stopping the program. Must funcs are a convention to handle errors where panics can be used.
-	if err != nil {
-		log.Fatal(err)
-	}
 }
