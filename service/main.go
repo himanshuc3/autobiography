@@ -7,7 +7,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/jackc/pgx/v5/stdlib" // Importing the pgx driver for PostgreSQL
+	database "himanshuc3.com/autobiography/db"
 	"himanshuc3.com/autobiography/handler"
+	"himanshuc3.com/autobiography/models"
 )
 
 // NOTE:
@@ -90,6 +93,17 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
 
+	db, err := models.Open(models.DefaultPostgresConfig())
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+	database.Init(db)
+
+	userService := &models.UserService{
+		DB: db,
+	}
+
 	// TODO:
 	// 1. Add a middleware to check if the user is authenticated and for logging
 	// 2. API vs SSR - API is flexible and agnostic of the client, separation of concerns,
@@ -107,9 +121,10 @@ func main() {
 	// router.Delete("/posts/{id}", pathHandler)
 
 	router.Mount("/posts", handler.InitMemoirRoutes())
+	router.Mount("/user", handler.InitUserRoutes(userService))
 
-	fmt.Println("Definitely starting the server on port 3333")
-	err := http.ListenAndServe(":3333", router)
+	fmt.Println("Definitely starting the server on port 9000")
+	err = http.ListenAndServe(":9000", router)
 
 	// NOTE:
 	// 1. Errorf wraps the error with a message

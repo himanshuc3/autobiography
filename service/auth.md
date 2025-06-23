@@ -9,6 +9,11 @@
 
 - Paid services like Auth0.
 
+## Cookies
+
+1. Can be stored using the BE by sending the `set-cookie` header.
+2. Server rendered applications prefer `cookies` to storing `jwt` for authentication.
+
 ## What is a hash function?
 
 - Arbitrary data -> result of fixed size using the data
