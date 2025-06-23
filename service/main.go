@@ -79,6 +79,37 @@ func pathHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
+	// 1. Setup database
+
+	db, err := models.Open(models.DefaultPostgresConfig())
+	fmt.Println(models.DefaultPostgresConfig().String())
+
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+	err = models.MigrateFS(db, migrations.FS, ".")
+
+	if err != nil {
+		panic(err)
+	}
+
+	// 2. Set services (naming is confusing, essentially database connections)
+	userService := &models.UserService{
+		DB: db,
+	}
+	sessionService := &models.SessionService{
+		DB: db,
+	}
+
+	// 3. Setup middleware
+	umw := handler.UserMiddleware{
+		SessionService: sessionService,
+	}
+
+	csrfKey := "Testdcio9w02usdflkjsd09982343d3k"
+	csrfMw := csrf.Protect([]byte(csrfKey), csrf.Secure(false))
+
 	// NOTES:
 	// 1. HandleFunc implements defaultServeMux, which is the default HTTP request multiplexer.
 	// 2. http.HandlerFunc(pathHandler) is a type conversion of pathHandler to http.HandlerFunc type, not a function call
@@ -94,27 +125,7 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
 
-	db, err := models.Open(models.DefaultPostgresConfig())
-	fmt.Println(models.DefaultPostgresConfig().String())
-
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-	err = models.MigrateFS(db, migrations.FS, ".")
-
-	if err != nil {
-		panic(err)
-	}
-
 	// database.Init(db)
-
-	userService := &models.UserService{
-		DB: db,
-	}
-	sessionService := &models.SessionService{
-		DB: db,
-	}
 
 	// TODO:
 	// 1. Add a middleware to check if the user is authenticated and for logging
@@ -132,14 +143,11 @@ func main() {
 	// router.Post("/post", pathHandler)
 	// router.Delete("/posts/{id}", pathHandler)
 
-	csrfKey := "Testdcio9w02usdflkjsd09982343d3k"
-	csrfMw := csrf.Protect([]byte(csrfKey), csrf.Secure(false))
-
 	router.Mount("/posts", handler.InitMemoirRoutes())
 	router.Mount("/user", handler.InitUserRoutes(userService, sessionService))
 
 	fmt.Println("Definitely starting the server on port 9000")
-	err = http.ListenAndServe(":9000", csrfMw(router))
+	err = http.ListenAndServe(":9000", csrfMw(umw.SetUser(router)))
 
 	// NOTE:
 	// 1. Errorf wraps the error with a message

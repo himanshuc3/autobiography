@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"himanshuc3.com/autobiography/context"
 	"himanshuc3.com/autobiography/models"
 )
 
@@ -86,20 +87,12 @@ func (uh UserHandler) ProcessSignIn(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uh UserHandler) CurrentUser(w http.ResponseWriter, r *http.Request) {
-	tokenCookie, err := readCookie(r, CookieSession)
-
-	if err != nil {
-		fmt.Println(err)
-		// TODO: Don't know the fuck to do
-		fmt.Fprintf(w, "The email cookie could not be read.")
+	ctx := r.Context()
+	user := context.GetUser(ctx)
+	if user == nil {
+		// TODO: Redirect to signin page
 		return
 	}
-	user, err := uh.SessionService.GetUser(tokenCookie)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Fprintf(w, "current user: %s\n", user.Email)
 }
 
 func (uh UserHandler) ProcessSignout(w http.ResponseWriter, r *http.Request) {
@@ -142,4 +135,40 @@ func InitUserRoutes(service *models.UserService, sessionService *models.SessionS
 	router.Put("/{id}", userHandler.UpdateUser)
 	router.Delete("/{id}", userHandler.DeleteUser)
 	return router
+}
+
+type UserMiddleware struct {
+	SessionService *models.SessionService
+}
+
+func (userMW UserMiddleware) SetUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tokenCookie, err := readCookie(r, CookieSession)
+
+		if err != nil {
+			next.ServeHTTP(w, r)
+			return
+		}
+		user, err := userMW.SessionService.GetUser(tokenCookie)
+		if err != nil {
+			next.ServeHTTP(w, r)
+			return
+		}
+		ctx := r.Context()
+		ctx = context.WithUser(ctx, user)
+
+		r = r.WithContext(ctx)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (umw UserMiddleware) RequireUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := context.GetUser(r.Context())
+		if user == nil {
+			// TODO: Redirect to signin page, can we return unauthenticated http error from here?
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
