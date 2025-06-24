@@ -66,3 +66,8 @@ if errors.As(err, &temporary_error_type) {
 }
 
 ```
+
+## Error segregation
+
+1. Public errors - errors that we know we can share
+2. Internal errors - anything else

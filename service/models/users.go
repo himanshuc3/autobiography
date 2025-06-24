@@ -2,9 +2,11 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -18,6 +20,10 @@ type User struct {
 	LastName     string `json:"last_name"`
 	CreatedAt    string `json:"created_at"`
 }
+
+var (
+	ErrEmailTaken = errors.New("models: Account/Email already existing")
+)
 
 // NOTE:
 //  1. Service struct to hold database connection
@@ -72,6 +78,13 @@ func (us *UserService) Create(newUser NewUser) (*User, error) {
 	err = row.Scan(&user.ID)
 
 	if err != nil {
+		var pgError *pgconn.PgError
+		if errors.As(err, &pgError) {
+			// TODO: Replace with a constant, unique violation error
+			if pgError.Code == "23505" {
+				return nil, ErrEmailTaken
+			}
+		}
 		return nil, fmt.Errorf("create user: %w", err)
 	}
 
