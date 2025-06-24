@@ -83,3 +83,19 @@ Complexity without enough benefits
 
 - Encoding algorithm that converts text to 64 characters: A-Z, a-z, +, /
   - Useful for safe transmission of text over networks
+
+## Password reset process
+
+1. Via `email-id` -> reset link with reset token sent to their email -> user updates password -> reset token expires
+
+SMTP Email example
+
+```
+MIME-Version: 1.0
+Date:
+From:
+To:
+
+
+This is my first markdown email.
+```
