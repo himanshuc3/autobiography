@@ -67,3 +67,5 @@ goose down
 
 - Run migrations on application bootup.
 - Possible to add migrations in go using goose.
+
+- Asynchronous emails (for password reset): Send a response before we even send the email.

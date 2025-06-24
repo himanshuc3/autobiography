@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/go-chi/chi/v5"
 	"himanshuc3.com/autobiography/context"
@@ -11,8 +12,10 @@ import (
 )
 
 type UserHandler struct {
-	UserService    *models.UserService
-	SessionService *models.SessionService
+	UserService          *models.UserService
+	SessionService       *models.SessionService
+	PasswordResetService *models.PasswordResetService
+	EmailService         *models.EmailService
 }
 
 // NOTE:
@@ -123,6 +126,33 @@ func (uh UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("User deleted successfully for ID: " + id))
+}
+func (uh UserHandler) ProcessForgotPassword(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		Email string `json:"email"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&data)
+
+	if err != nil {
+		fmt.Println("ProcessForgotPassword: Failed to parse json")
+		return
+	}
+
+	pwReset, err := uh.PasswordResetService.Create(data.Email)
+	vals := url.Values{
+		"token": {pwReset.Token},
+	}
+	resetUrl := "https://storyverse.net/reset-pw?" + vals.Encode()
+
+	if err != nil {
+		// TODO: Handle other edge cases like
+		// email/user doesn't exist
+		// password reset email already sent
+		fmt.Println(err)
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+	}
+
+	err = uh.EmailService.ForgotPassword(data.Email, resetUrl)
 }
 
 func InitUserRoutes(service *models.UserService, sessionService *models.SessionService) chi.Router {
