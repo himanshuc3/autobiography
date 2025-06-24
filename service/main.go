@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/csrf"
 	_ "github.com/jackc/pgx/v5/stdlib" // Importing the pgx driver for PostgreSQL
+	"github.com/joho/godotenv"
 	"himanshuc3.com/autobiography/handler"
 	"himanshuc3.com/autobiography/migrations"
 	"himanshuc3.com/autobiography/models"
@@ -76,11 +79,52 @@ func pathHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type config struct {
+	PSQL models.PostgresConfig
+	SMTP models.SMTPConfig
+	CSRF struct {
+		Key    string
+		Secure bool
+	}
+	Server struct {
+		Address string
+	}
+}
+
+func loadEnvConfig() (config, error) {
+	var cfg config
+	err := godotenv.Load()
+	if err != nil {
+		return cfg, err
+	}
+
+	cfg.PSQL = models.DefaultPostgresConfig()
+
+	cfg.SMTP.Host = os.Getenv("SMTP_HOST")
+	portStr := os.Getenv("SMTP_PORT")
+	cfg.SMTP.Port, err = strconv.Atoi(portStr)
+	if err != nil {
+		return cfg, err
+	}
+
+	cfg.SMTP.Username = os.Getenv("SMTP_USERNAME")
+	cfg.SMTP.Password = os.Getenv("SMTP_HOST")
+
+	cfg.CSRF.Key = "Random key"
+	cfg.CSRF.Secure = false
+	cfg.Server.Address = ":9000"
+}
+
 func main() {
+
+	cfg, err := loadEnvConfig()
+	if err != nil {
+		panic(err)
+	}
 
 	// 1. Setup database
 
-	db, err := models.Open(models.DefaultPostgresConfig())
+	db, err := models.Open(cfg.PSQL)
 	fmt.Println(models.DefaultPostgresConfig().String())
 
 	if err != nil {
@@ -100,15 +144,19 @@ func main() {
 	sessionService := &models.SessionService{
 		DB: db,
 	}
+	pwResetService := &models.PasswordResetService{
+		DB: db,
+	}
+	emailService, err := models.NewEmailService(cfg.SMTP)
 
 	// 3. Setup middleware
 	umw := handler.UserMiddleware{
 		SessionService: sessionService,
 	}
 
-	csrfKey := "Testdcio9w02usdflkjsd09982343d3k"
+	csrfKey := cfg.CSRF.Key
 	// TODO: Fix secure flag before deploying to prod
-	csrfMw := csrf.Protect([]byte(csrfKey), csrf.Secure(false))
+	csrfMw := csrf.Protect([]byte(csrfKey), csrf.Secure(cfg.CSRF.Secure))
 
 	// 4. Setup controllers/handlers in routing
 	router := chi.NewRouter()
@@ -117,11 +165,11 @@ func main() {
 	router.Use(umw.RequireUser)
 	router.Get("/", pathHandler)
 	router.Mount("/posts", handler.InitMemoirRoutes())
-	router.Mount("/user", handler.InitUserRoutes(userService, sessionService))
+	router.Mount("/user", handler.InitUserRoutes(userService, sessionService, pwResetService, emailService))
 
 	// 5. Start the server
-	fmt.Println("Definitely starting the server on port 9000")
-	err = http.ListenAndServe(":9000", router)
+	fmt.Printf("Definitely starting the server on port %s...\n", cfg.Server.Address)
+	err = http.ListenAndServe(cfg.Server.Address, router)
 	if err != nil {
 		log.Fatal(err)
 	}

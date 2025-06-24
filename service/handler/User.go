@@ -155,9 +155,9 @@ func (uh UserHandler) ProcessForgotPassword(w http.ResponseWriter, r *http.Reque
 	err = uh.EmailService.ForgotPassword(data.Email, resetUrl)
 }
 
-func InitUserRoutes(service *models.UserService, sessionService *models.SessionService) chi.Router {
+func InitUserRoutes(service *models.UserService, sessionService *models.SessionService, pwResetService *models.PasswordResetService, emailService *models.EmailService) chi.Router {
 	router := chi.NewRouter()
-	userHandler := UserHandler{UserService: service, SessionService: sessionService}
+	userHandler := UserHandler{UserService: service, SessionService: sessionService, PasswordResetService: pwResetService, EmailService: emailService}
 	router.Post("/signup", userHandler.ProcessSignUp)
 	router.Post("/signin", userHandler.ProcessSignIn)
 	router.Post("/me", userHandler.CurrentUser)
