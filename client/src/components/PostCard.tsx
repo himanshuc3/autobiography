@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, Avatar, Typography, Tag, Space, Button, Divider } from 'antd';
 import { HeartOutlined, MessageOutlined, TwitterOutlined, StarOutlined } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
 
 const { Text, Title, Paragraph } = Typography;
 
@@ -23,6 +24,7 @@ interface PostCardProps {
 }
 
 const PostCard = ({ 
+  id,
   user, 
   bookCover, 
   title, 
@@ -45,17 +47,23 @@ const PostCard = ({
       <div style={{ display: 'flex', gap: '20px' }}>
         {/* Book Cover */}
         <div style={{ flexShrink: 0 }}>
-          <img 
-            src={bookCover} 
-            alt={title}
-            style={{ 
-              width: '120px', 
-              height: '180px', 
-              objectFit: 'cover',
-              borderRadius: '4px',
-              border: '1px solid #e5e7eb'
-            }} 
-          />
+          <Link to={`/post/${id}`}>
+            <img 
+              src={bookCover} 
+              alt={title}
+              style={{ 
+                width: '120px', 
+                height: '180px', 
+                objectFit: 'cover',
+                borderRadius: '4px',
+                border: '1px solid #e5e7eb',
+                cursor: 'pointer',
+                transition: 'transform 0.2s',
+              }} 
+              onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            />
+          </Link>
         </div>
 
         {/* Content */}
@@ -75,9 +83,21 @@ const PostCard = ({
           </div>
 
           {/* Title and Author */}
-          <Title level={3} style={{ margin: '0 0 8px 0', color: '#1f5f5b' }}>
-            {title}
-          </Title>
+          <Link to={`/post/${id}`} style={{ textDecoration: 'none' }}>
+            <Title 
+              level={3} 
+              style={{ 
+                margin: '0 0 8px 0', 
+                color: '#1f5f5b',
+                cursor: 'pointer',
+                transition: 'color 0.2s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.color = '#0f4c47'}
+              onMouseOut={(e) => e.currentTarget.style.color = '#1f5f5b'}
+            >
+              {title}
+            </Title>
+          </Link>
           <Text type="secondary" style={{ fontSize: '14px', marginBottom: '16px', display: 'block' }}>
             by {author}
           </Text>
@@ -122,9 +142,11 @@ const PostCard = ({
               <Button type="text" icon={<HeartOutlined />} size="small">
                 Upvote
               </Button>
-              <Button type="text" icon={<MessageOutlined />} size="small">
-                Comments
-              </Button>
+              <Link to={`/post/${id}`}>
+                <Button type="text" icon={<MessageOutlined />} size="small">
+                  Comments
+                </Button>
+              </Link>
               <Button type="text" icon={<TwitterOutlined />} size="small">
                 Share
               </Button>

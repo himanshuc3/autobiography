@@ -13,4 +13,4 @@ The sole objective of the website is to create a cover art that acts as a brief 
 
 - TODO: Password reset service/routing/handler not completed
 - TODO: Link up client being served independently or using server
-- TODO:
+- TODO: Cleanup of lovable haggas

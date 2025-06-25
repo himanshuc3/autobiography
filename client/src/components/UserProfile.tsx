@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Dropdown, Avatar, Typography, Space, Button } from 'antd';
 import { 
   BellOutlined, 
@@ -12,10 +12,16 @@ import {
   LogoutOutlined,
   EditOutlined
 } from '@ant-design/icons';
+import { Button as ShadcnButton } from '@/components/ui/button';
+import AuthModal from './AuthModal';
 
 const { Text } = Typography;
 
 const UserProfile = () => {
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  // TODO: Replace with actual user authentication state
+  const isLoggedIn = false; // This should come from your auth context/state
+
   const profileMenuItems = [
     {
       key: 'profile',
@@ -48,6 +54,23 @@ const UserProfile = () => {
       ),
     },
   ];
+
+  if (!isLoggedIn) {
+    return (
+      <>
+        <ShadcnButton 
+          onClick={() => setIsAuthModalOpen(true)}
+          className="bg-purple-600 hover:bg-purple-700"
+        >
+          Login
+        </ShadcnButton>
+        <AuthModal 
+          isOpen={isAuthModalOpen} 
+          onClose={() => setIsAuthModalOpen(false)} 
+        />
+      </>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
